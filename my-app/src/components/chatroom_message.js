@@ -12,7 +12,7 @@ export default class ChatRoomMessage extends Component {
     
     render() {
         var username = sessionStorage.getItem("username")
-        console.log(this.props.message.sender)
+        
         if(this.props.message.sender == username){
             return (
                 <div>

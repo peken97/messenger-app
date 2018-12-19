@@ -44,7 +44,7 @@ export default class GroupList extends Component {
             })
     }
     onHandleOpenGroup(data){
-        console.log(data);
+        
         this.props.handleOpenGroup(data);
     }
     openCreateGroupModal(){
@@ -59,7 +59,7 @@ export default class GroupList extends Component {
         })
     }
     createGroup(group){
-        console.log(group);
+        
         var groups = this.state.groups;
         groups.push(group)
         this.setState({

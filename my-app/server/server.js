@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server, { origins: '*:*'});
 
 const User = require("./models/model_login");
 const Message = require("./models/model_message");
@@ -10,8 +13,8 @@ const Group = require("./models/model_group");
 mongoose.connect("mongodb://pkenic:DJANI123@ds135704.mlab.com:35704/messenger")
 
 const db = mongoose.connection;
-
-const app = express();
+io.set('origins', '*:*');
+server.listen(80);
 
 const port = 3001;
 
@@ -23,11 +26,24 @@ app.use(cors());
 //app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+io.on('connection', function(socket){
+    console.log("Someone Connected")
+    socket.on('message', body => {
+        console.log("Message detected")
+        console.log(body)
+        socket.broadcast.emit('message', {
+            body: body,
+            from: socket.id.slice(8)
+        })
+    })
+})
+
+
 app.get("/", function(req, res){
     res.json({value: "Hello"});
 })
 app.post("/login", function(req, res){
-    console.log(req.body.username);
+    
     
     User.find({username: req.body.username}).lean().then(function(result){
         console.log(result);
@@ -45,7 +61,7 @@ app.post("/login", function(req, res){
             return;
         }
         catch(e){
-            console.log(e);
+            console.log(e.message);
             res.json({
                 response: false
             })
@@ -56,10 +72,7 @@ app.post("/login", function(req, res){
 })
 
 app.post("/register", function(req, res){
-    console.log("Trying to register")
-    console.log(req.body);
     
-
     const user = new User({
         _id: new mongoose.Types.ObjectId(),
         email: req.body.email,
@@ -68,14 +81,14 @@ app.post("/register", function(req, res){
     })
 
     User.find({username: req.body.username}).then(function(result){
-        console.log(result);
+        
         if(result.length != 0){
             res.json({response: false})
             return;
         }
         else{
             user.save().then(response => {
-                console.log(response);
+                
                 res.json({response: true})
             }).catch(e => {
                 console.log(e.message);
@@ -93,22 +106,22 @@ app.post("/register", function(req, res){
 
 app.post("/search_friend", function(req, res){
     
-    console.log(req.body);
+    
     var data = {
         username: req.body.username
     }
     User.findOne(data).then(function(result){
-        console.log(result);
+        
         res.json(result)
     }).catch(err => console.log(err));
 })
 
 app.post("/add_friend", function(req, res){
-    console.log(req.body);
+    
     User.findOne({username: req.body.username}).then(response => {
-        console.log(response)
+        
         var friendsList = response.friends
-        console.log(friendsList)
+        
         if(friendsList.indexOf(req.body.friend_username) != -1){
             res.json({response: false})
             return;
@@ -129,7 +142,7 @@ app.post("/add_friend", function(req, res){
 })
 
 app.post("/get_friends", function(req, res){
-    console.log(req.body)
+    
     
     User.findOne({username: req.body.username}).then( response => {
         console.log(response)
@@ -151,8 +164,7 @@ app.post("/make_group", function(req, res){
     })
     
     group.save().then(response=>{
-        console.log("Saved");
-        console.log(response);
+        
         res.json({response: true})
     })
 
@@ -160,31 +172,19 @@ app.post("/make_group", function(req, res){
 
 })
 app.post("/get_groups", function(req, res){
-    console.log("Get groups")
-    console.log(req.body)
+    
     let searchCriteria = {
         username: req.body.username
     }
     
     Group.find({users: searchCriteria}).then(response =>
         {
-            console.log("Response:")
-            console.log(response)
+            
             res.json(response);
         }).catch(e => console.log(e.message))
     
-
-    return;
-    Group.find().then( response => {
-        console.log(response)
-        res.json(response.friends)
-    }).catch(e => {
-        console.log(e.message)
-        res.json([])
-    })
 })
 app.post("/send_message", function(req, res){
-    console.log(req.body)
 
     Group.findById({_id: req.body.group_id}).then(response=>{
 

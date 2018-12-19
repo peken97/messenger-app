@@ -18,6 +18,9 @@ export default class Messenger extends Component {
         this.openActiveChatroom = this.openActiveChatroom.bind(this);
     }
     componentWillMount(){
+        if(sessionStorage.getItem("username") == null){
+            this.props.history.push("/login");
+        }
         /*this.setState({
             openChatRoomData: {
                 messages: [],
@@ -50,12 +53,13 @@ export default class Messenger extends Component {
                 </div>
             );
         }
+        
         return (
             <div className="w-100 h-100" id="messenger">
             <Header history={this.props.history}/>
                 <div className="d-flex flex-row h-75">
                     <GroupList handleOpenGroup={this.onHandleOpenGroup} />
-                    <ChatRoom key={0} data={this.state.openChatRoomData}/>
+                    <ChatRoom  data={this.state.openChatRoomData}/>
                     
                 </div>
             </div>

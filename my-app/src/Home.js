@@ -15,7 +15,12 @@ export default class Home extends Component {
 
         this.onHandleOpenGroup = this.onHandleOpenGroup.bind(this);
     }
-
+    componentWillMount(){
+        
+        if(sessionStorage.getItem("username") == null){
+            this.props.history.push("/login");
+        }
+    }
     onHandleOpenGroup(data){
         console.log(data);
         

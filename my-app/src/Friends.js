@@ -23,7 +23,11 @@ export default class Friends extends Component {
         this.openMyFriends = this.openMyFriends.bind(this);
         this.openAddFriends = this.openAddFriends.bind(this);
     }
-
+    componentWillMount(){
+        if(sessionStorage.getItem("username") == null){
+            this.props.history.push("/login");
+        }
+    }
     onHandleOpenGroup(data){
         console.log(data);
         

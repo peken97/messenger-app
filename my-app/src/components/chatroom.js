@@ -3,7 +3,9 @@ import ChatRoomMessage from './chatroom_message';
 import CONSTANTS from "./constants"
 import ChatroomInfo from "./chatroom_info";
 //import './App.css';
-
+import io from "socket.io-client";
+var socket = io("localhost:80")
+socket = io("localhost:80")
 function generateMessage(data){
     return {
         text: data.text,
@@ -23,16 +25,20 @@ export default class ChatRoom extends Component {
                 
             }
         }
+
+        
+
         this.handleMessage = this.handleMessage.bind(this);
         this.sendMessage = this.sendMessage.bind(this);
+        this.getMessage = this.getMessage.bind(this);
     }
 
     sendMessage(){
+        console.log(this.state.data)
         if(this.state.currentMessage == ""){
             return;
         }
-        console.log(this.state.data);
-        console.log(this.state.currentMessage)
+        
         let messageText = this.state.currentMessage;
         let data = this.state.data;
         let dataToPush = {
@@ -45,7 +51,7 @@ export default class ChatRoom extends Component {
         this.setState({
             data: data
         })
-        console.log(data);
+        
         fetch(CONSTANTS.SEND_MESSAGE, {
             method: "POST",
             headers: {
@@ -55,30 +61,53 @@ export default class ChatRoom extends Component {
         }).then(res=>{
             return res.json()
         }).then(res => {
-            console.log(res)
+            let dataToSocket = {
+                message: dataToPush,
+                stateDetails: this.state.data
+            }
+            socket.emit('message', dataToPush)
             this.setState({
                 currentMessage: ""
             })
+            
         })
 
     }
     componentWillMount(){
-        
-        console.log(this.props.data);
-        
         this.setState({
             data: this.props.data
         })
-        
-        
+    }
+    getMessage(){
+        console.log(this.state.data)
+    }
+    componentWillUnmount(){
+        socket.off('message')
     }
     componentDidMount(){
+        this.scrollToBottom();  
+
         
-        this.scrollToBottom();
+        console.log(this.state.data)
+        socket.on('message', socketData => { 
+            console.log("Message Received");
+            console.log(this.state.data)
+            
+            console.log(socketData)
+            let data = this.state.data
+            
+           // data.messages.push(socketData.body)
+           /* this.setState({
+                data: data
+            })*/
+            //let messages = this.state.data.messages;
+            //messages.push(message.)
+        })
     }
     componentDidUpdate(){
         
         this.scrollToBottom();
+        
     }
     handleMessage(e){
         this.setState({
@@ -90,9 +119,9 @@ export default class ChatRoom extends Component {
         this.el.scrollIntoView({ behavior: 'smooth' });
       }
     render() {
-        console.log(this.state.data)
+        
         if(this.state.data == undefined){
-            alert()
+            
             return (
                 <div className="card w-100 d-flex flex-row h-100">
                     <div className="card w-100 d-flex flex-column h-100 chatroom">
